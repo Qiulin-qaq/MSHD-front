@@ -97,7 +97,7 @@ const clearRegisterData = () => {
         </el-form-item>
         <el-form-item class="flex">
           <el-link type="info" :underline="false" @click="
-            router.push('/signup');
+            router.push('/user/signup');
           clearRegisterData();
           ">
             注册 →

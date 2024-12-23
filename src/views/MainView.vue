@@ -38,7 +38,7 @@ const handleSearch = () => {
 const handleCommand = (command) => {
   if (command === 'logout') {
     tokenStore.removeToken();
-    router.push('/login');
+    router.push('/user/login');
     ElMessage.success('已退出登录');
   } else if (command === 'profile') {
     router.push('/main/profile');

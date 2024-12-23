@@ -6,18 +6,34 @@ export const userRegisterService = (registerData) => {
   const formData = new FormData();
   formData.append('username', registerData.username);
   formData.append('password', registerData.password);
-  formData.append('re_password', registerData.repassword);
-
-  return request.post("http://localhost:8080/User/signup", formData);  // 使用完整的后端路径
+  formData.append('re_password', registerData.re_password);
+  
+  return request.post("http://localhost:8888/user/signup", formData);
 };
 
 // 提供调用登录接口的函数
 export const userLoginService = (loginData) => {
   const formData = new FormData();
-  for (let key in loginData) {
-    if (loginData[key] !== null && loginData[key] !== undefined) {
-      formData.append(key, loginData[key]);
-    }
-  }
-  return request.post("/User/login", formData);  // 使用封装好的 request 工具
+  formData.append('username', loginData.username);
+  formData.append('password', loginData.password);
+  
+  return request.post("/user/login", formData);
+};
+
+// 获取用户信息
+export const getUserInfoService = (username) => {
+  return request({
+    url: '/info',
+    method: 'get',
+    params: { username }
+  });
+};
+
+// 修改用户信息
+export const updateUserService = (data) => {
+  return request({
+    url: '/update',
+    method: 'put',
+    data
+  });
 };

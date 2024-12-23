@@ -15,12 +15,12 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
-            path: '/login',
+            path: '/user/login',
             component: Login,
             meta: { requiresAuth: false }
         },
         {
-            path: '/signup',
+            path: '/user/signup',
             component: SignUp,
             meta: { requiresAuth: false }
         },
@@ -58,7 +58,7 @@ const router = createRouter({
         },
         {
             path: '/',
-            redirect: '/login'
+            redirect: '/user/login'
         }
     ]
 })
@@ -68,8 +68,12 @@ router.beforeEach((to, from, next) => {
     const tokenStore = useTokenStore()
     const isAuthenticated = tokenStore.getToken()
 
+    // 添加更细致的路由控制
     if (to.meta.requiresAuth && !isAuthenticated) {
+        ElMessage.warning('请先登录')
         next('/login')
+    } else if (to.path === '/login' && isAuthenticated) {
+        next('/main')
     } else {
         next()
     }

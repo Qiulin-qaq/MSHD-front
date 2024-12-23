@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -19,6 +20,7 @@
     "sass": "^1.81.0",
     "sass-loader": "^16.0.3",
     "vue": "^3.2.13",
+    "vue-echarts": "^7.0.3",
     "vue-router": "^4.0.13"
   },
   "devDependencies": {
