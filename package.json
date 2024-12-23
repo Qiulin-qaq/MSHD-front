@@ -19,6 +19,7 @@
     "sass": "^1.81.0",
     "sass-loader": "^16.0.3",
     "vue": "^3.2.13",
+    "vue-echarts": "^7.0.3",
     "vue-router": "^4.0.13"
   },
   "devDependencies": {

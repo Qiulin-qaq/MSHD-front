@@ -34,7 +34,7 @@ const rules = {
 };
 
 //调用后台接口，完成注册
-import { userRegisterService } from "@/api/user.js";
+import { userRegisterService} from "@/api/user.js";
 import router from "@/router/router.js";
 const register = async () => {
   try {

@@ -2,11 +2,8 @@ import { useTokenStore } from "@/stores/token";
 import axios from "axios";
 import { ElMessage } from "element-plus";
 
-
-
 const baseURL = "/api";
 const instance = axios.create({ baseURL });
-
 
 // 添加响应拦截器
 instance.interceptors.response.use(
