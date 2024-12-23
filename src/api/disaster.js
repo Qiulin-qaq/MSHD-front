@@ -35,12 +35,11 @@ export const deleteDisaster = (id) => {
 }
 
 // 获取灾情统计数据
-export const getDisasterStatistics = () => {
-  return request({
-    url: '/v1/decode/data/statistics',
-    method: 'get'
-  })
+export const getDisasterStatisticsService = () => {
+  
+  return request.get("http://localhost:8888/disaster_data/counts");
 }
+
 
 
 

@@ -73,7 +73,7 @@ import {
   LegendComponent,
   GridComponent
 } from 'echarts/components'
-import { getDisasterStatistics } from '@/api/disaster'
+import { getDisasterStatisticsService } from '@/api/disaster'
 
 // 注册必需的组件
 use([
@@ -174,29 +174,32 @@ const trendChartOption = ref({
 // 获取统计数据
 const fetchStatistics = async () => {
   try {
-    const res = await getDisasterStatistics()
+    const res = await getDisasterStatisticsService()
     if (res.code === 200) {
-      const { overview, categoryStats, locationStats, weeklyTrend } = res.data
+      const { disaster_counts, new_data } = res.data
 
       // 更新总览数据
-      overviewData.value[0].value = overview.total
-      overviewData.value[1].value = overview.todayCount
-      overviewData.value[2].value = overview.weekCount
-      overviewData.value[3].value = overview.monthCount
+      overviewData.value[0].value = disaster_counts       // 总灾害数量
+      overviewData.value[1].value = new_data.today        // 今日新增
+      overviewData.value[2].value = new_data.week         // 本周新增
+      overviewData.value[3].value = new_data.month        // 本月新增
 
       // 更新类型分布图表
-      categoryChartOption.value.series[0].data = categoryStats.map(item => ({
-        name: item.category,
-        value: item.count
-      }))
+      // categoryChartOption.value.series[0].data = categoryStats.map(item => ({
+      //   name: item.category,
+      //   value: item.count
+      // }))
 
-      // 更新地区分布图表
-      locationChartOption.value.xAxis.data = locationStats.map(item => item.location)
-      locationChartOption.value.series[0].data = locationStats.map(item => item.count)
+      // // 更新地区分布图表
+      // locationChartOption.value.xAxis.data = locationStats.map(item => item.location)
+      // locationChartOption.value.series[0].data = locationStats.map(item => item.count)
 
-      // 更新趋势图表
-      trendChartOption.value.xAxis.data = weeklyTrend.map(item => item.date)
-      trendChartOption.value.series[0].data = weeklyTrend.map(item => item.count)
+      // // 更新趋势图表
+      // trendChartOption.value.xAxis.data = weeklyTrend.map(item => item.date)
+      // trendChartOption.value.series[0].data = weeklyTrend.map(item => item.count)
+    }
+    else {
+      console.error('获取统计数据失败:', res.msg)
     }
   } catch (error) {
     console.error('获取统计数据失败:', error)
@@ -215,10 +218,12 @@ onMounted(() => {
   .overview-card {
     .card-content {
       text-align: center;
+
       .title {
         font-size: 16px;
         color: #666;
       }
+
       .value {
         font-size: 24px;
         font-weight: bold;
@@ -235,4 +240,4 @@ onMounted(() => {
     height: 300px;
   }
 }
-</style> 
+</style>
