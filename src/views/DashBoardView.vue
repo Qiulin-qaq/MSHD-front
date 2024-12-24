@@ -73,7 +73,7 @@ import {
   LegendComponent,
   GridComponent
 } from 'echarts/components'
-import { getDisasterStatisticsService } from '@/api/disaster'
+import { getDisasterStatisticsService} from '@/api/disaster'
 
 // 注册必需的组件
 use([
@@ -94,10 +94,10 @@ if (app) {
 }
 
 const overviewData = ref([
-  { title: '灾情总数', value: 0 },
-  { title: '今日新增', value: 0 },
-  { title: '本周新增', value: 0 },
-  { title: '本月新增', value: 0 }
+  { title: '灾情总数', value: 123 },
+  { title: '今日新增', value: 11 },
+  { title: '本周新增', value: 29 },
+  { title: '本月新增', value: 23 }
 ])
 
 const categoryChartOption = ref({
@@ -176,7 +176,7 @@ const fetchStatistics = async () => {
   try {
     const res = await getDisasterStatisticsService()
     if (res.code === 200) {
-      const { disaster_counts, new_data } = res.data
+      const { disaster_counts, new_data, type_distribution, location_distribution } = res.data
 
       // 更新总览数据
       overviewData.value[0].value = disaster_counts       // 总灾害数量
@@ -184,19 +184,59 @@ const fetchStatistics = async () => {
       overviewData.value[2].value = new_data.week         // 本周新增
       overviewData.value[3].value = new_data.month        // 本月新增
 
-      // 更新类型分布图表
-      // categoryChartOption.value.series[0].data = categoryStats.map(item => ({
-      //   name: item.category,
-      //   value: item.count
-      // }))
+      // 更新灾情类型分布数据
+      
+      const pieData = type_distribution.map(item => ({
+        name: item.category,
+        value: item.count
+      }))
+      categoryChartOption.value.series[0].data = pieData
+      
 
-      // // 更新地区分布图表
-      // locationChartOption.value.xAxis.data = locationStats.map(item => item.location)
-      // locationChartOption.value.series[0].data = locationStats.map(item => item.count)
+      // 更新地区分布数据
+      const cityData = location_distribution.reduce((acc, curr) => {
+        const cityName = curr.location.match(/^([^市]+市)/)?.[1] || curr.location
+        acc[cityName] = (acc[cityName] || 0) + curr.count
+        return acc
+      }, {})
 
-      // // 更新趋势图表
-      // trendChartOption.value.xAxis.data = weeklyTrend.map(item => item.date)
-      // trendChartOption.value.series[0].data = weeklyTrend.map(item => item.count)
+      // 转换为图表所需的数据格式
+      const cities = Object.keys(cityData)
+      const counts = Object.values(cityData)
+      
+      locationChartOption.value = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        xAxis: {
+          type: 'category',
+          data: cities,
+          axisLabel: {
+            interval: 0,
+            rotate: 30
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '灾情数量'
+        },
+        series: [
+          {
+            type: 'bar',
+            data: counts,
+            itemStyle: {
+              color: '#409EFF'
+            },
+            label: {
+              show: true,
+              position: 'top'
+            }
+          }
+        ]
+      }
     }
     else {
       console.error('获取统计数据失败:', res.msg)
@@ -205,6 +245,8 @@ const fetchStatistics = async () => {
     console.error('获取统计数据失败:', error)
   }
 }
+
+
 
 onMounted(() => {
   fetchStatistics()
