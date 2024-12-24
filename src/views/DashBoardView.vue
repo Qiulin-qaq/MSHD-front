@@ -124,7 +124,12 @@ const categoryChartOption = ref({
           fontWeight: 'bold'
         }
       },
-      data: []
+      data: [
+        { name: '房屋破坏', value: 0 },
+        { name: '人员伤亡', value: 0 },
+        { name: '生命线工程破坏', value: 0 },
+        { name: '次生灾害', value: 0 }
+      ]
     }
   ]
 })
@@ -138,15 +143,27 @@ const locationChartOption = ref({
   },
   xAxis: {
     type: 'category',
-    data: []
+    data: ['北京市', '上海市', '广州市', '深圳市', '南京市'],
+    axisLabel: {
+      interval: 0,
+      rotate: 30
+    }
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    name: '灾情数量'
   },
   series: [
     {
       type: 'bar',
-      data: []
+      data: [110, 100, 90, 80, 70],
+      itemStyle: {
+        color: '#409EFF'
+      },
+      label: {
+        show: true,
+        position: 'top'
+      }
     }
   ]
 })
