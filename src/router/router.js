@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useTokenStore } from '@/stores/token'
+// import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
 
 import Login from '@/views/LoginView.vue'
@@ -10,6 +10,8 @@ import AnalysisView from '@/views/AnalysisView.vue'
 import DisasterView from '@/views/DisasterView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import adminView from '@/views/adminView.vue'
+import usermanagementView from '@/views/usermanagementView.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -57,6 +59,18 @@ const router = createRouter({
             ]
         },
         {
+            path: '/admin', // admin作为main的子路径
+            component: adminView,
+            meta: { requiresAuth: true, isAdmin: true },
+            children: [
+              {
+                path: 'usermanagement',  // 唯一的子路由
+                component: usermanagementView,
+                meta: { requiresAuth: true, isAdmin: true }
+              }
+            ]
+        },
+        {
             path: '/',
             redirect: '/user/login'
         }
@@ -64,20 +78,20 @@ const router = createRouter({
 })
 
 // 导航守卫
-router.beforeEach((to, from, next) => {
-    const tokenStore = useTokenStore()
-    const isAuthenticated = tokenStore.getToken()
+// router.beforeEach((to, from, next) => {
+//     const tokenStore = useTokenStore()
+//     const isAuthenticated = tokenStore.getToken()
 
-    // 添加更细致的路由控制
-    if (to.meta.requiresAuth && !isAuthenticated) {
-        ElMessage.warning('请先登录')
-        next('/login')
-    } else if (to.path === '/login' && isAuthenticated) {
-        next('/main')
-    } else {
-        next()
-    }
-})
+//     // 添加更细致的路由控制
+//     if (to.meta.requiresAuth && !isAuthenticated) {
+//         ElMessage.warning('请先登录')
+//         next('/login')
+//     } else if (to.path === '/login' && isAuthenticated) {
+//         next('/main')
+//     } else {
+//         next()
+//     }
+// })
 
 // 添加路由错误处理
 router.onError((error) => {

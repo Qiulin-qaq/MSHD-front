@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { Menu as IconMenu, Setting, User, Warning } from '@element-plus/icons-vue';
+import { User } from '@element-plus/icons-vue';  // 保留用户管理图标
 import { useTokenStore } from '@/stores/token';
 import { ElMessage } from 'element-plus';
 
@@ -16,12 +16,9 @@ const searchQuery = ref('');
 // 计算当前路径名称
 const currentPath = computed(() => {
   const pathMap = {
-    '/main': '仪表盘',
-    
-    '/main/disaster': '灾情管理',
-    '/main/settings': '系统设置'
+    '/admin/usermanagement': '用户管理', // 用户管理路径
   };
-  return pathMap[route.path] || '仪表盘';
+  return pathMap[route.path] || '用户管理';
 });
 
 const handleSelect = (index) => {
@@ -41,7 +38,7 @@ const handleCommand = (command) => {
     router.push('/user/login');
     ElMessage.success('已退出登录');
   } else if (command === 'profile') {
-    router.push('/main/profile');
+    router.push('/admin/profile'); // 更改为/admin/profile
   }
 };
 </script>
@@ -53,7 +50,7 @@ const handleCommand = (command) => {
       <el-aside :width="isCollapse ? '64px' : '200px'" class="aside">
         <div class="logo">
           <img src="@/assets/logo.png" alt="Logo" v-show="!isCollapse" />
-          <span v-show="!isCollapse">灾情数据系统</span>
+          <span v-show="!isCollapse">管理员系统</span>
         </div>
         <el-menu
           :default-active="activeIndex"
@@ -65,18 +62,10 @@ const handleCommand = (command) => {
           active-text-color="#409EFF"
           router
         >
-          <el-menu-item index="/main">
-            <el-icon><IconMenu /></el-icon>
-            <span>仪表盘</span>
-          </el-menu-item>
-          
-          <el-menu-item index="/main/disaster">
-            <el-icon><Warning /></el-icon>
-            <span>灾情管理</span>
-          </el-menu-item>
-          <el-menu-item index="/main/settings">
-            <el-icon><Setting /></el-icon>
-            <span>系统设置</span>
+          <!-- 用户管理菜单项 -->
+          <el-menu-item index="/admin/usermanagement">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -91,10 +80,10 @@ const handleCommand = (command) => {
               @click="isCollapse = !isCollapse"
               class="collapse-btn"
             >
-              <el-icon><IconMenu /></el-icon>
+              <el-icon><User /></el-icon>
             </el-button>
             <el-breadcrumb separator="/">
-              <el-breadcrumb-item>首页</el-breadcrumb-item>
+              <el-breadcrumb-item>管理员系统</el-breadcrumb-item>
               <el-breadcrumb-item>{{ currentPath }}</el-breadcrumb-item>
             </el-breadcrumb>
           </div>
@@ -234,4 +223,4 @@ const handleCommand = (command) => {
     }
   }
 }
-</style> 
+</style>
