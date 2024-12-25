@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { Menu as IconMenu, Message, Setting, User, Warning } from '@element-plus/icons-vue';
+import { Menu as IconMenu, Setting, User, Warning } from '@element-plus/icons-vue';
 import { useTokenStore } from '@/stores/token';
 import { ElMessage } from 'element-plus';
 
@@ -17,7 +17,7 @@ const searchQuery = ref('');
 const currentPath = computed(() => {
   const pathMap = {
     '/main': '仪表盘',
-    '/main/analysis': '数据分析',
+    
     '/main/disaster': '灾情管理',
     '/main/settings': '系统设置'
   };
@@ -69,10 +69,7 @@ const handleCommand = (command) => {
             <el-icon><IconMenu /></el-icon>
             <span>仪表盘</span>
           </el-menu-item>
-          <el-menu-item index="/main/analysis">
-            <el-icon><Message /></el-icon>
-            <span>数据分析</span>
-          </el-menu-item>
+          
           <el-menu-item index="/main/disaster">
             <el-icon><Warning /></el-icon>
             <span>灾情管理</span>

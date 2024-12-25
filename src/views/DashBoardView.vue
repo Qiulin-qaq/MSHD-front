@@ -69,7 +69,7 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart, LineChart, BarChart } from 'echarts/charts'
 import { ElMessage } from 'element-plus'
-import jsonp from 'jsonp'
+
 
 
 import {
@@ -198,7 +198,7 @@ const fetchDisasterList = async () => {
     if (res.code === 200) {
 
       disasterList.value = res.data.all_data
-      console.log(disasterList)
+
       nextTick(() => {
         initMap() // 获取灾情列表后绘制地图
       })
@@ -321,46 +321,11 @@ const styles = {
     "anchor": { x: 16, y: 32 }
   })
 }
-let lastRequestTime = 0;
-const requestDelay = 2000; // 每请求间隔200ms，避免超限
 
-const geocoder = async (address) => {
-  try {
-    const currentTime = Date.now();
-    if (currentTime - lastRequestTime < requestDelay) {
-      // 如果请求太频繁，等待一段时间
-      await new Promise(resolve => setTimeout(resolve, requestDelay));
-    }
 
-    const encodedAddress = encodeURIComponent(address);
 
-    const url = `https://apis.map.qq.com/ws/geocoder/v1/?address=${encodedAddress}&key=F4XBZ-HDDY7-5ZBXJ-PGXDZ-ULL33-JXBPQ&output=jsonp&callback=handleResponse`;
 
-    window.handleResponse = function (response) {
-      const { status, result } = response;
-      if (status === 0) {
-        return result.location;
-      } else {
-        throw new Error(`地理编码失败: ${response.message}`);
-      }
-    };
 
-    await new Promise((resolve, reject) => {
-      jsonp(url, { param: 'callback' }, (err, data) => {
-        if (err) {
-          reject(new Error('请求失败'));
-        } else {
-          resolve(data);
-        }
-      });
-    });
-
-    lastRequestTime = Date.now(); // 更新最后请求时间
-  } catch (error) {
-    console.error('获取经纬度失败:', error);
-    return null;
-  }
-};
 
 
 
@@ -368,44 +333,82 @@ let map = null
 // let isMapInitialized = false;
 
 
-const batchSize = 5;  // 每批次处理的数据量
-const delayTime = 500;  // 延迟时间，单位毫秒（500ms）
+const processRandomDisasters = async () => {
+  const randomCoordinates = [
+    { lat: 39.92293, lng: 116.41275, title: '北京市市辖区东城区东华门街道多福巷社区居委会' },  
+    { lat: 39.919282, lng: 116.406146, title: '北京市市辖区东城区东华门街道银闸社区居委会' },  
+    { lat: 39.894722, lng: 116.416716, title: '北京市市辖区东城区崇文门外街道新世界家园社区居委会' },  
+    { lat: 39.89821, lng: 116.42622, title: '北京市市辖区东城区崇文门外街道国瑞城东区社区居委会' },  
+    { lat: 37.710836, lng: 116.108047, title: '南河北省衡水市景县温城乡大温城村村民委员会京' },
+    { lat: 42.756641, lng: 129.177954, title: '吉林省延边朝鲜族自治州和龙市头道镇龙坪村委会' },  
+    { lat: 42.781211, lng: 129.263849, title: '吉林省延边朝鲜族自治州和龙市头道镇广新村委会' },  
+     
+  ];
 
-// 控制遍历和处理批次的函数
-const processDisastersInBatches = async (disasters) => {
   const markerLayer = new TMap.MultiMarker({
     map: map,
-    styles: styles
+    styles: styles,
   });
-  for (let i = 0; i < disasters.length; i += batchSize) {
-    // 获取当前批次的数据
-    const batch = disasters.slice(i, i + batchSize);
 
-    // 处理当前批次的数据
-    await Promise.all(batch.map(async (disaster) => {
-      const location = disaster.location;
-      
-      const latLng = await geocoder(location);
-      console.log(latLng);
-      if (latLng) {
-        markerLayer.add([{
-          "id": disaster.id.toString(),
-          "styleId": 'myStyle',
-          "position": new TMap.LatLng(latLng.lat, latLng.lng),
-          "properties": {
-            "title": disaster.location
-          }
-        }]);
-      }
-    }));
-
-    // 等待指定的时间再处理下一批
-    if (i + batchSize < disasters.length) {
-      console.log(`等待 ${delayTime} 毫秒再继续处理下一批...`);
-      await new Promise(resolve => setTimeout(resolve, delayTime));
-    }
-  }
+  // 为每个固定点添加标记
+  randomCoordinates.forEach(coord => {
+    markerLayer.add([{
+      id: coord.title,
+      styleId: 'myStyle',
+      position: new TMap.LatLng(coord.lat, coord.lng),
+      properties: {
+        title: coord.title,  // 标记的标题
+      },
+    }]);
+  });
 };
+
+// 批量处理灾情数据
+
+// const processDisastersInBatches = async (disasters) => {
+//   console.log('disasters', disasters);
+
+//   const markerLayer = new TMap.MultiMarker({
+//     map: map,
+//     styles: styles,  // 使用预定义样式
+//   });
+
+//   const batchSize = 5;  // 每次批量处理5个灾情
+//   const delayTime = 100;  // 批次处理间隔时间
+//   markerLayer.add([
+//     {
+//       id: "1",  // 标记唯一标识
+//       styleId: 'myStyle',  // 使用预定义样式
+//       position: new TMap.LatLng(39.9042, 116.4074),  // 标记的经纬度
+//       properties: {
+//         title: "北京",  // 标记的标题
+//       }
+//     }
+//   ]);
+
+//   for (let i = 0; i < disasters.length; i++) {
+//     const disaster = disasters[i];
+//     const latLng = await geocoder(disaster.location);  // 获取经纬度
+//     if (latLng) {
+//       console.log('经纬度:', latLng);  // 确保有返回经纬度
+//       console.log('灾情:', disaster);
+//       markerLayer.add([{
+//         id: disaster.id.toString(),
+//         styleId: 'myStyle',
+//         position: new TMap.LatLng(latLng.lat, latLng.lng),
+//         properties: {
+//           title: disaster.location,
+//         },
+//       }]);
+//     }
+//     // 延迟处理下一批
+//     if (i + batchSize < disasters.length) {
+//       console.log(`等待 ${delayTime} 毫秒后继续处理下一批...`);
+//       await new Promise(resolve => setTimeout(resolve, delayTime));
+//     }
+//   }
+
+// };
 // 修改初始化地图函数
 const initMap = () => {
 
@@ -415,18 +418,18 @@ const initMap = () => {
   const mapCenter = new TMap.LatLng(formData.value.lat, formData.value.lng)
   map = new TMap.Map(mapRef.value, {
     center: mapCenter, //设置地图中心点坐标
-    zoom: 17, //设置地图缩放级别
+    zoom: 5, //设置地图缩放级别
     pitch: 0, //设置俯仰角
     rotation: 0, //设置地图旋转角度
     viewMode: '2D'
   })
-  
 
-   
-  
+
+
+
   // 遍历灾情数据，获取经纬度并绘制标记
 
-  processDisastersInBatches(disasterList.value);
+  processRandomDisasters()
 
 
 };
