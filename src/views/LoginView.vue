@@ -95,6 +95,7 @@ const clearRegisterData = () => {
         <el-form-item>
           <el-button class="button" type="primary" auto-insert-space @click="login">登录</el-button>
         </el-form-item>
+
         <el-form-item class="flex">
           <el-link type="info" :underline="false" @click="
             router.push('/user/signup');
@@ -103,6 +104,8 @@ const clearRegisterData = () => {
             注册 →
           </el-link>
         </el-form-item>
+
+        <el-button type="primary" @click="router.push('/admin')" style="margin-left: 200px; margin-top: -230px;">管理员登录</el-button>
       </el-form>
     </el-col>
   </el-row>
@@ -114,6 +117,7 @@ const clearRegisterData = () => {
   height: 888px;
   background-color: #fff;
   overflow: hidden;
+
   .bg {
     background: url("@/assets/login_bg.jpg") no-repeat center / cover;
     border-radius: 0 20px 20px 0;
@@ -130,11 +134,11 @@ const clearRegisterData = () => {
       margin: 0 auto;
     }
 
-    
-      .button {
-        width: 100px; // 确保按钮在表单容器内占满可用宽度
-        margin-left: 0px;
-      }
+
+    .button {
+      width: 100px; // 确保按钮在表单容器内占满可用宽度
+      margin-left: 0px;
+    }
 
     .flex {
       width: 100%;
