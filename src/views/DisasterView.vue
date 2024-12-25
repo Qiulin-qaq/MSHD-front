@@ -13,25 +13,34 @@
             </el-button>
 
 
+
           </div>
 
-          <el-button style="margin-left: -750px;" @click="handleImport">导入灾情</el-button>
+          <el-button style="margin-left: -350px;" @click="handleImport">导入灾情</el-button>
 
           <div class="right">
 
-            <el-input v-model="searchQuery" placeholder="搜索灾情信息" class="search-input" @keyup.enter="handleSearch">
-              <template #append>
-                <el-button :icon="Search" @click="handleSearch" />
-              </template>
-            </el-input>
+            <!-- 刷新按钮 -->
+            <el-button type="primary" @click="fetchDisasterList" style="margin-right: 10px;">
+              刷新
+            </el-button>
+
+            <!-- 新增的搜索字段 -->
+            <el-input @input="handleSearch" :icon="Search" v-model="source" placeholder="来源" class="search-input" />
+            <el-input @input="handleSearch" v-model="carrier" placeholder="载体" class="search-input" />
+            <el-input @input="handleSearch" v-model="category" placeholder="类别" class="search-input" />
+            <el-input @input="handleSearch" v-model="subcategory" placeholder="子类别" class="search-input" />
           </div>
+
         </div>
+
       </template>
 
       <el-table v-loading="loading" :data="disasterList" @selection-change="handleSelectionChange" style="width: 100%">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="location" label="地点" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="source" label="来源" />
         <el-table-column prop="date" label="日期" width="120">
           <template #default="scope">
             {{ scope.row.date || '-' }}
@@ -58,19 +67,7 @@
       </div>
     </el-card>
 
-    <!-- 删除确认对话框 -->
-    <el-dialog v-model="deleteDialogVisible" title="确认删除" width="300px">
-      <span>确定要删除选中的 {{ deleteIds.value.length }} 条数据吗？</span>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="deleteDialogVisible = false">取消</el-button>
-          <el-button type="danger" :loading="loading" @click="confirmDelete">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-
-
+    
 
     <!-- 新增对话框 -->
     <el-dialog v-model="addDialogVisible" title="新增灾情信息" width="500px">
@@ -99,12 +96,8 @@
           <el-input v-model="importForm.code" placeholder="请输入编号" />
         </el-form-item>
         <el-form-item label="文件" prop="file">
-          <el-upload 
-          v-model:file-list="importFileList" 
-          :show-file-list="true" 
-          :on-change="handleFileChange"
-          :file="importForm.file"
-          :auto-upload="false">
+          <el-upload v-model:file-list="importFileList" :show-file-list="true" :on-change="handleFileChange"
+            :file="importForm.file" :auto-upload="false">
             <el-button size="small" type="primary">选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -126,7 +119,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getDisasterListService, addDisasterService, deleteDisasterService } from '@/api/disaster'
+import { getSearchService, getDisasterListService, addDisasterService, deleteDisasterService } from '@/api/disaster'
 import axios from 'axios'
 
 
@@ -136,7 +129,7 @@ const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-const searchQuery = ref('')
+
 const selectedRows = ref([])
 const defaultDisasterList = [
   {
@@ -186,13 +179,58 @@ const defaultDisasterList = [
   }
 ]
 const disasterList = ref(defaultDisasterList)
-const deleteDialogVisible = ref(false)
-const deleteIds = ref([])
+
+
 
 const rules = ref({
   code: [{ required: true, message: '编码不能为空', trigger: 'blur' }],
   description: [{ required: true, message: '灾情描述不能为空', trigger: 'blur' }],
 });
+
+// 新的搜索字段
+const source = ref('');
+const carrier = ref('');
+const category = ref('');
+const subcategory = ref('');
+
+
+//search
+const handleSearch = async () => {
+  try {
+    loading.value = true
+    const formData = new FormData()
+
+
+    formData.append('source', source.value);
+    formData.append('carrier', carrier.value);
+    formData.append('category', category.value);
+    formData.append('subcategory', subcategory.value);
+
+
+    const res = await getSearchService(formData)
+
+    console.log(res)
+
+
+    if (res.code === 200) {
+      disasterList.value = res.data || [];
+      total.value = disasterList.value.length
+      console.log(disasterList.value)
+      ElMessage.success('查询成功');
+    } else {
+      ElMessage.error(res.msg || '获取数据失败')
+
+    }
+  } catch (error) {
+    console.error('获取搜索后灾情列表失败:', error)
+    ElMessage.error('获取搜索后灾情列表失败')
+
+  } finally {
+    loading.value = false
+  }
+}
+
+
 
 
 // 新增相关的数据
@@ -230,15 +268,7 @@ const resetAddForm = () => {
 const handleAddSubmit = async () => {
 
   try {
-    // 表单校验
-    // const valid = await new Promise((resolve) => {
-    //   if (ref.addFormRef) ref.addFormRef.validate((valid) => resolve(valid));
-    // });
-    // if (!valid) {
-    //   ElMessage.warning('请填写必填项！');
-    //   return;
-    // }
-    // console.log(addForm.value)
+
     loading.value = true;
     const formData = new FormData();
     console.log(addForm.value)
@@ -252,7 +282,7 @@ const handleAddSubmit = async () => {
       ElMessage.success('新增成功')
       addDialogVisible.value = false;
       resetAddForm();
-      // await fetchDisasterList();
+      await fetchDisasterList();
 
 
 
@@ -271,25 +301,30 @@ const handleAddSubmit = async () => {
 const fetchDisasterList = async () => {
   try {
     loading.value = true
+
     const res = await getDisasterListService()
+
     if (res.code === 200) {
-      // 如果后端返回数据，使用后端数据；否则使用默认数据
-      disasterList.value = Array.isArray(res.data) && res.data.length > 0
-        ? res.data
-        : defaultDisasterList
+
+      disasterList.value = res.data.all_data || defaultDisasterList
       total.value = disasterList.value.length
+
     } else {
+
       ElMessage.error(res.msg || '获取数据失败')
-      // 如果请求失败，使用默认数据
-      disasterList.value = defaultDisasterList
-      total.value = defaultDisasterList.length
+
+
+      disasterList.value = []
+      total.value = 0
     }
   } catch (error) {
+
     console.error('获取灾情列表失败:', error)
     ElMessage.error('获取灾情列表失败')
-    // 如果发生错误，使用默认数据
-    disasterList.value = defaultDisasterList
-    total.value = defaultDisasterList.length
+
+    disasterList.value = []
+    total.value = 0
+
   } finally {
     loading.value = false
   }
@@ -299,24 +334,22 @@ const fetchDisasterList = async () => {
 
 
 // 删除单条数据
-const handleDelete = (row) => {
-  deleteIds.value = [row.id];
-  deleteDialogVisible.value = true;
-};
-
-// 确认删除
-const confirmDelete = async () => {
+const handleDelete = async (row) => {
   try {
     loading.value = true;
 
+    // 删除请求数据
+    const requestData = {
+      ids: [row.id] // 直接传递当前行的 ID
+    };
+
     // 调用删除接口
-    const response = await deleteDisasterService(deleteIds.value);
-    if (response.success) {
+    const response = await deleteDisasterService(requestData.ids);
+    if (response.code === 200) {
       ElMessage.success('删除成功！');
-      deleteDialogVisible.value = false;
-      fetchDisasterList(); // 刷新列表
+      await fetchDisasterList(); // 刷新列表
     } else {
-      ElMessage.error(response.message || '删除失败！');
+      ElMessage.error(response.msg || '删除失败！');
     }
   } catch (error) {
     ElMessage.error('删除失败，请重试！');
@@ -326,9 +359,27 @@ const confirmDelete = async () => {
 };
 
 // 处理批量删除
-const handleBatchDelete = () => {
-  deleteIds.value = selectedRows.value.map((row) => row.id);
-  deleteDialogVisible.value = true;
+const handleBatchDelete = async () => {
+  try {
+    loading.value = true;
+
+    const requestData = {
+      ids: selectedRows.value.map((row) => row.id)
+    };
+
+    // 调用批量删除接口
+    const response = await deleteDisasterService(requestData.ids);
+    if (response.code === 200) {
+      ElMessage.success('批量删除成功！');
+      await fetchDisasterList(); // 刷新列表
+    } else {
+      ElMessage.error(response.msg || '批量删除失败！');
+    }
+  } catch (error) {
+    ElMessage.error('批量删除失败，请重试！');
+  } finally {
+    loading.value = false;
+  }
 };
 
 // 处理表格的多选
@@ -336,22 +387,9 @@ const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
 };
 
-// 搜索灾情信息
-const handleSearch = () => {
-  fetchDisasterList();
-};
 
-// 改变分页大小
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  fetchDisasterList();
-};
 
-// 改变当前页码
-const handleCurrentChange = (page) => {
-  currentPage.value = page;
-  fetchDisasterList();
-};
+
 // 控制导入对话框的显示
 const importDialogVisible = ref(false);
 
@@ -384,7 +422,7 @@ const handleFileChange = (file) => {
 //上传灾情文件
 const uploadFile = async () => {
 
-  
+
   const formdata = new FormData()
   formdata.append('file', importForm.value.file)
   formdata.append('code', importForm.value.code)
@@ -435,7 +473,7 @@ onMounted(() => {
 
 
     .search-input {
-      width: 300px;
+      width: 150px;
     }
   }
 

@@ -11,11 +11,12 @@ export const getDisasterListService = () => {
 // 删除灾情
 export const deleteDisasterService = (ids) => {
   return request({
-    url: `/v1/decode/data`,
+    url: "http://localhost:8888/v1/data/delete",
 
     method: 'delete',
-    params: {
-      ids
+    data: {ids},
+    headers: {
+      'Content-Type': 'application/json',
     }
   })
 }
@@ -41,12 +42,24 @@ export const addDisasterService = (data) => {
 }
 
 
-
+//导入灾情文件
 export const addFileService = (data) => {
   return request({
     url: "http://localhost:8888/v1/decode/media",
     method: 'post',
     data: data
+
+  })
+}
+
+export const getSearchService = (data) => {
+  return request({
+    url: "http://localhost:8888/v1/query",
+    method: 'post',
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data',  // 明确指定使用 form-data
+    }
 
   })
 }
